@@ -1,13 +1,19 @@
 package io.techbridge.invoice.techbridge_invoice.repository.implementation;
 
 import io.techbridge.invoice.techbridge_invoice.domain.Role;
+import io.techbridge.invoice.techbridge_invoice.exception.ApiException;
 import io.techbridge.invoice.techbridge_invoice.repository.RoleRepository;
+import io.techbridge.invoice.techbridge_invoice.rowMapper.RoleRowMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
+import static io.techbridge.invoice.techbridge_invoice.enumeration.RoleType.*;
+import static io.techbridge.invoice.techbridge_invoice.query.RoleQuery.*;
 
 /**
  * @author Li-Ting Liao
@@ -19,6 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class RoleRepositoryImpl implements RoleRepository<Role> {
+    private final NamedParameterJdbcTemplate jdbc;
+
     @Override
     public Role create(Role data) {
         return null;
@@ -46,7 +54,17 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
 
     @Override
     public void addRoleToUser(Long userId, String roleName) {
+        log.info("Adding role {} to user id: {}", roleName, userId);
+        try {
+            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, Map.of("roleName", roleName), new RoleRowMapper());
+            jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", Objects.requireNonNull(role).getId()));
 
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ApiException("No role found by name: " + ROLE_USER.name());
+
+        } catch (Exception exception) {
+            throw new ApiException("An error occurred. Please try again.");
+        }
     }
 
     @Override
