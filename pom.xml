@@ -12,7 +12,7 @@
 	<artifactId>techbridge-invoice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>techbridge-invoice</name>
-	<description>Application to manage invocies and customers</description>
+	<description>Application to manage invoices and customers</description>
 	<url/>
 	<licenses>
 		<license/>
