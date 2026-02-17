@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -34,7 +35,7 @@ import static io.techbridge.invoice.techbridge_invoice.query.UserQuery.*;
 public class UserRepositoryImpl implements UserRepository<User> {
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository<Role> roleRepository;
-    private final BCryptPasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
     @Override
     public User create(User user) {
