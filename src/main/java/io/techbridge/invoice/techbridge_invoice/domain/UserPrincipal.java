@@ -3,6 +3,7 @@ package io.techbridge.invoice.techbridge_invoice.domain;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -21,12 +22,14 @@ import static java.util.stream.Collectors.toList;
 public class UserPrincipal implements UserDetails {
     private final User user;
     private final String permissions;
+//    private final Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return stream(permissions.split(",".trim()))
-                .map(SimpleGrantedAuthority::new)
-                .collect(toList());
+                .map(SimpleGrantedAuthority::new)   // .map(permission -> new SimpleGrantedAuthority(permission))
+                .collect(toList());     // [SimpleGrantedAuthority("READ:USER"), SimpleGrantedAuthority("READ:CUSTOMER"), ...]
+//        return AuthorityUtils.commaSeparatedStringToAuthorityList(role.getPermission());
     }
 
     @Override

@@ -15,10 +15,13 @@ spring:
             mode: never → change this to "always" when you want to run the schema.sql file to populate the database again (remember to delete all the existing tables first).
             continue-on-error: false
             
-    twilio:
-        account-sid: ${TWILIO_ACCOUNT_SID} → add these values in the intellij > Edit Configurations > Environment Variables (TWILIO_ACCOUNT_SID=xxx;TWILIO_AUTH_TOKEN=xxx)
-        auth-token: ${TWILIO_AUTH_TOKEN}
-        from-number: ${TWILIO_FROM_NUMBER}
+twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID} → add these values in the intellij > Edit Configurations > Environment Variables (TWILIO_ACCOUNT_SID=xxx;TWILIO_AUTH_TOKEN=xxx)
+    auth-token: ${TWILIO_AUTH_TOKEN}
+    from-number: ${TWILIO_FROM_NUMBER}
+    
+jwt:
+  secret: ${MY_JWT_SECRET}  → add this in the intellij > Edit Configurations > Environment Variables (MY_JWT_SECRET=xxx)
 ```
 
 Online Spring Boot Banner Generator:

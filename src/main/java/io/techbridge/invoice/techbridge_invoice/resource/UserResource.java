@@ -2,8 +2,11 @@ package io.techbridge.invoice.techbridge_invoice.resource;
 
 import io.techbridge.invoice.techbridge_invoice.domain.HttpResponse;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
+import io.techbridge.invoice.techbridge_invoice.domain.UserPrincipal;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
 import io.techbridge.invoice.techbridge_invoice.form.LoginForm;
+import io.techbridge.invoice.techbridge_invoice.provider.TokenProvider;
+import io.techbridge.invoice.techbridge_invoice.service.RoleService;
 import io.techbridge.invoice.techbridge_invoice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.Map;
 
+import static io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper.toUser;
 import static java.time.LocalDateTime.now;
 
 /**
@@ -37,6 +41,8 @@ public class UserResource {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
+    private final RoleService roleService;
 
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
@@ -69,11 +75,18 @@ public class UserResource {
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timestamp(now().toString())
-                        .data(Map.of("user", user))
+                        .data(Map.of("user", user,
+                                "access_token", tokenProvider.createAccessToken(getUserPrincipal(user)),
+                                "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
                         .message("Login Success")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
                         .build());
+    }
+
+    private UserPrincipal getUserPrincipal(UserDTO user) {
+        return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()).getPermission());
+        // return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
     }
 
     private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
