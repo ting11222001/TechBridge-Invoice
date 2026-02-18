@@ -1,6 +1,7 @@
 package io.techbridge.invoice.techbridge_invoice.repository;
 
 import io.techbridge.invoice.techbridge_invoice.domain.User;
+import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
 
 import java.util.Collection;
 
@@ -20,4 +21,5 @@ public interface UserRepository <T extends User> {
 
     /* More Complex Operations */
     User getUserByEmail(String email);
+    void sendVerificationCode(UserDTO user);
 }

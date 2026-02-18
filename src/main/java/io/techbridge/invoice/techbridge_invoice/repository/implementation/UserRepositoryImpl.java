@@ -3,12 +3,16 @@ package io.techbridge.invoice.techbridge_invoice.repository.implementation;
 import io.techbridge.invoice.techbridge_invoice.domain.Role;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.domain.UserPrincipal;
+import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
 import io.techbridge.invoice.techbridge_invoice.exception.ApiException;
 import io.techbridge.invoice.techbridge_invoice.repository.RoleRepository;
 import io.techbridge.invoice.techbridge_invoice.repository.UserRepository;
 import io.techbridge.invoice.techbridge_invoice.rowMapper.UserRowMapper;
+import io.techbridge.invoice.techbridge_invoice.utils.SmsService;
+import io.techbridge.invoice.techbridge_invoice.utils.VerificationCodeGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -27,6 +31,7 @@ import java.util.*;
 import static io.techbridge.invoice.techbridge_invoice.enumeration.RoleType.*;
 import static io.techbridge.invoice.techbridge_invoice.enumeration.VerificationType.*;
 import static io.techbridge.invoice.techbridge_invoice.query.UserQuery.*;
+import static org.apache.commons.lang3.time.DateUtils.addDays;
 
 /**
  * @author Li-Ting Liao
@@ -38,9 +43,12 @@ import static io.techbridge.invoice.techbridge_invoice.query.UserQuery.*;
 @RequiredArgsConstructor
 @Slf4j
 public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService {
+    private static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository<Role> roleRepository;
     private final PasswordEncoder encoder;
+    private final VerificationCodeGenerator verificationCodeGenerator;
+    private final SmsService smsService;
 
     @Override
     public User create(User user) {
@@ -70,7 +78,6 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
             // Return the newly created user
             return user;
-
         } catch (Exception exception) {
             throw new ApiException("An error occurred. Please try again.");
         }
@@ -135,6 +142,22 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             return user;
         } catch (EmptyResultDataAccessException exception) {
             throw new ApiException("No User found by email: " + email);
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public void sendVerificationCode(UserDTO user) {
+        String expirationDate = DateFormatUtils.format(addDays(new Date(), 1), DATE_FORMAT);
+        String verificationCode = verificationCodeGenerator.generateVerificationCode(8);
+
+        try {
+            jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, Map.of("userId", user.getId()));
+            jdbc.update(INSERT_VERIFICATION_CODE_QUERY, Map.of("code", verificationCode, "userId", user.getId(), "expirationDate", expirationDate));
+            // This will trigger Twilio to send SMS text, so comment it when just testing the code.
+            // smsService.sendSMS(user.getPhone(), "From: TechBridge Invoices \n Verification code\n" + verificationCode);
         } catch (Exception exception) {
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");

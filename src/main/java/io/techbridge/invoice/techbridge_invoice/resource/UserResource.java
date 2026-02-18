@@ -41,15 +41,8 @@ public class UserResource {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.getEmail(), loginForm.getPassword()));
-        UserDTO userDto = userService.getUserByEmail(loginForm.getEmail());
-        return ResponseEntity.ok().body(
-                HttpResponse.builder()
-                        .timestamp(now().toString())
-                        .data(Map.of("user", userDto))
-                        .message("Login Success")
-                        .status(HttpStatus.OK)
-                        .statusCode(HttpStatus.OK.value())
-                        .build());
+        UserDTO user = userService.getUserByEmail(loginForm.getEmail());
+        return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
     }
 
     @PostMapping("/register")
@@ -72,4 +65,27 @@ public class UserResource {
                 .toUriString());
     }
 
+    private ResponseEntity<HttpResponse> sendResponse(UserDTO user) {
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .data(Map.of("user", user))
+                        .message("Login Success")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+    private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
+        userService.sendVerificationCode(user);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .data(Map.of("user", user))
+                        .message("Verification Code Sent")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+
+    }
 }
