@@ -27,8 +27,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private static final String[] PUBLIC_URLS = {
-            "/user/login",
-            "/user/register"
+            "/user/login/**",
+            "/user/register/**"
     };
     private final UserDetailsService userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;

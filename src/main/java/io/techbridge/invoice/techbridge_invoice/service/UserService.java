@@ -10,4 +10,5 @@ import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
  */
 public interface UserService {
     UserDTO createUser(User user);
+    UserDTO getUserByEmail(String email);
 }

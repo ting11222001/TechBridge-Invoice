@@ -3,13 +3,16 @@ package io.techbridge.invoice.techbridge_invoice.resource;
 import io.techbridge.invoice.techbridge_invoice.domain.HttpResponse;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
+import io.techbridge.invoice.techbridge_invoice.form.LoginForm;
 import io.techbridge.invoice.techbridge_invoice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,14 +32,24 @@ import static java.time.LocalDateTime.now;
 @RestController
 @RequestMapping(path="/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UserResource {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<HttpResponse> login(@RequestBody @Valid String email, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        return null;
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.getEmail(), loginForm.getPassword()));
+        UserDTO userDto = userService.getUserByEmail(loginForm.getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .data(Map.of("user", userDto))
+                        .message("Login Success")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
     }
 
     @PostMapping("/register")
