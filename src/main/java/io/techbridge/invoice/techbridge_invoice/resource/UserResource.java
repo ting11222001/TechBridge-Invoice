@@ -34,7 +34,7 @@ public class UserResource {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
-    public ResponseEntity<HttpResponse> login(String email, String password) {
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         return null;
     }
