@@ -15,11 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -40,7 +36,6 @@ import static java.time.LocalDateTime.now;
 public class UserResource {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RoleService roleService;
 
@@ -61,6 +56,21 @@ public class UserResource {
                         .message("User created")
                         .status(HttpStatus.CREATED)
                         .statusCode(HttpStatus.CREATED.value())
+                        .build());
+    }
+
+    @GetMapping("/verify/code/{email}/{code}")
+    public ResponseEntity<HttpResponse> verifyCode(@PathVariable("email") String email, @PathVariable("code") String code) {
+        UserDTO user = userService.verifyCode(email, code);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .data(Map.of("user", user,
+                                "access_token", tokenProvider.createAccessToken(getUserPrincipal(user)),
+                                "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
+                        .message("Login Success")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
                         .build());
     }
 

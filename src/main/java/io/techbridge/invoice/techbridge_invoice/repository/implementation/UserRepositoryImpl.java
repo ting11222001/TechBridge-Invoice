@@ -159,6 +159,30 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             jdbc.update(INSERT_VERIFICATION_CODE_QUERY, Map.of("code", verificationCode, "userId", user.getId(), "expirationDate", expirationDate));
             // This will trigger Twilio to send SMS text, so comment it when just testing the code.
             // smsService.sendSMS(user.getPhone(), "From: TechBridge Invoices \n Verification code\n" + verificationCode);
+            // Instead, I can just log the generated verification code in the code while manually setting the using_mfa=1 in the Users table (it will trigger the login() in UserResource)
+            log.info("Verification Code: {}", verificationCode);
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public User verifyCode(String email, String code) {
+        try {
+            User userByCode = jdbc.queryForObject(SELECT_USER_BY_USER_CODE_QUERY, Map.of("code", code), new UserRowMapper());
+            User userByEmail = jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
+
+            if (userByCode.getEmail().equalsIgnoreCase(userByEmail.getEmail())) {
+                // Once we can confirm the verification code gives us the same user, then verification is complete, so we delete the code to prevent the same code used again
+                jdbc.update(DELETE_CODE, Map.of("code", code));
+                return userByCode;
+            } else {
+                throw new ApiException("Code is invalid. Please try again.");
+            }
+
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ApiException("Could not find the record.");
         } catch (Exception exception) {
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");

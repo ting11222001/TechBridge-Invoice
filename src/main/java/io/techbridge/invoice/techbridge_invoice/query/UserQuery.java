@@ -12,4 +12,6 @@ public class UserQuery {
     public static final String SELECT_USER_BY_EMAIL_QUERY = "SELECT * FROM Users WHERE email = :email";
     public static final String DELETE_VERIFICATION_CODE_BY_USER_ID = "DELETE FROM TwoFactorVerifications WHERE user_id = :userId";
     public static final String INSERT_VERIFICATION_CODE_QUERY = "INSERT INTO TwoFactorVerifications (code, user_id, expiration_date) VALUES (:code, :userId, :expirationDate)";
+    public static final String SELECT_USER_BY_USER_CODE_QUERY = "SELECT u.* FROM Users u JOIN TwoFactorVerifications t on t.user_id = u.id WHERE t.code = :code";
+    public static final String DELETE_CODE = "DELETE FROM TwoFactorVerifications WHERE code = :code";
 }
