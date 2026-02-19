@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.techbridge.invoice.techbridge_invoice.utils.ExceptionUtils.processError;
 import static java.util.Arrays.asList;
 
 /**
@@ -55,7 +56,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             filter.doFilter(request, response);
         } catch (Exception exception) {
             log.error(exception.getMessage());
-            //processError(request, response, exception);
+            processError(request, response, exception);
         }
     }
 
