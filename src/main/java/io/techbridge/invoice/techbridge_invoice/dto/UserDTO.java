@@ -1,6 +1,6 @@
 package io.techbridge.invoice.techbridge_invoice.dto;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
  * @version 1.0
  * @since 02/2026
  */
-@Data
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor // use these specific annotations instead of @Data
 public class UserDTO {
     private Long id;
     private String firstName;
@@ -24,4 +27,6 @@ public class UserDTO {
     private boolean isNotLocked;
     private boolean isUsingMfa;
     private LocalDateTime createdAt;
+    private String roleName;    // Map the role name and permissions of the user also
+    private String permissions;
 }
