@@ -1,5 +1,6 @@
 package io.techbridge.invoice.techbridge_invoice.configuration;
 
+import io.techbridge.invoice.techbridge_invoice.filter.CustomAuthorizationFilter;
 import io.techbridge.invoice.techbridge_invoice.handler.CustomAccessDeniedHandler;
 import io.techbridge.invoice.techbridge_invoice.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * @author Li-Ting Liao
@@ -34,6 +36,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAuthorizationFilter customAuthorizationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,7 +53,8 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(customAccessDeniedHandler)
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
-                .userDetailsService(userDetailsService);
+                .userDetailsService(userDetailsService)
+                .addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

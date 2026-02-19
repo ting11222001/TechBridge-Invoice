@@ -25,6 +25,7 @@ import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.authenticated;
 
 /**
  * @author Li-Ting Liao
