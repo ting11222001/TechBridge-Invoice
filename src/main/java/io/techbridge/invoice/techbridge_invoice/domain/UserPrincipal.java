@@ -1,5 +1,7 @@
 package io.techbridge.invoice.techbridge_invoice.domain;
 
+import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
+import io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,15 +23,17 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class UserPrincipal implements UserDetails {
     private final User user;
-    private final String permissions;
-//    private final Role role;
+//    private final String permissions;
+    private final Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return stream(permissions.split(",".trim()))
-                .map(SimpleGrantedAuthority::new)   // .map(permission -> new SimpleGrantedAuthority(permission))
-                .collect(toList());     // [SimpleGrantedAuthority("READ:USER"), SimpleGrantedAuthority("READ:CUSTOMER"), ...]
-//        return AuthorityUtils.commaSeparatedStringToAuthorityList(role.getPermission());
+//        return stream(permissions.split(",".trim()))
+//                .map(SimpleGrantedAuthority::new)   // .map(permission -> new SimpleGrantedAuthority(permission))
+//                .collect(toList());     // [SimpleGrantedAuthority("READ:USER"), SimpleGrantedAuthority("READ:CUSTOMER"), ...]
+        return stream(this.role.getPermission().split(",".trim()))
+                .map(SimpleGrantedAuthority::new)
+                .collect(toList());
     }
 
     @Override
@@ -60,5 +64,9 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.user.isEnabled();
+    }
+
+    public UserDTO getUser() {
+        return UserDTOMapper.fromUser(this.user, role);
     }
 }

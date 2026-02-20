@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.techbridge.invoice.techbridge_invoice.domain.UserPrincipal;
+import io.techbridge.invoice.techbridge_invoice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,7 @@ public class TokenProvider {
     private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1_800_000;  // this is in ms = 30 min
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000; // 5 days
     private static final String TOKEN_CANNOT_BE_VERIFIED = "";
+    private final UserService userService;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -89,7 +91,7 @@ public class TokenProvider {
     }
 
     public Authentication getAuthentication(String email, List<GrantedAuthority> authorities, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(userService.getUserByEmail(email), null, authorities);
         userPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return userPasswordAuthToken;
     }

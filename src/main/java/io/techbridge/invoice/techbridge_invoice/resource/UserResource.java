@@ -4,10 +4,14 @@ import io.techbridge.invoice.techbridge_invoice.domain.HttpResponse;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.domain.UserPrincipal;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
+import io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper;
+import io.techbridge.invoice.techbridge_invoice.exception.ApiException;
 import io.techbridge.invoice.techbridge_invoice.form.LoginForm;
 import io.techbridge.invoice.techbridge_invoice.provider.TokenProvider;
 import io.techbridge.invoice.techbridge_invoice.service.RoleService;
 import io.techbridge.invoice.techbridge_invoice.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
 
-import static io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper.toUser;
+import static io.techbridge.invoice.techbridge_invoice.utils.ExceptionUtils.processError;
 import static java.time.LocalDateTime.now;
 
 /**
@@ -40,14 +43,34 @@ public class UserResource {
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
     private final RoleService roleService;
+    private final HttpServletRequest httpServletRequest;
+    private final HttpServletResponse httpServletResponse;
 
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.getEmail(), loginForm.getPassword()));
-        // can use the unauthenticated method in UsernamePasswordAuthenticationToken like this:
-        // authenticationManager.authenticate(unauthenticated(loginForm.getEmail(), loginForm.getPassword()));
-        UserDTO user = userService.getUserByEmail(loginForm.getEmail());
+        Authentication authentication = authenticate(loginForm.getEmail(), loginForm.getPassword());
+        UserDTO user = getAuthenticatedUser(authentication);
+//        System.out.println("/login authentication: " + authentication);
+//        System.out.println("/login getAuthenticatedUser() returns: " + user);
+//        System.out.println("/login getAuthenticatedUser() returns user, checking the user email: " + user.getEmail());
         return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
+    }
+
+    private UserDTO getAuthenticatedUser(Authentication authentication) {
+        return ((UserPrincipal) authentication.getPrincipal()).getUser();
+    }
+
+    private Authentication authenticate(String email, String password) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            // can use the unauthenticated() in UsernamePasswordAuthenticationToken class to replace the new UsernamePasswordAuthenticationToken() like this:
+            // authenticationManager.authenticate(unauthenticated(loginForm.getEmail(), loginForm.getPassword()));
+
+            return authentication;
+        } catch (Exception exception) {
+            processError(httpServletRequest, httpServletResponse, exception);
+            throw new ApiException(exception.getMessage());
+        }
     }
 
     @PostMapping("/register")
@@ -113,8 +136,8 @@ public class UserResource {
     }
 
     private UserPrincipal getUserPrincipal(UserDTO user) {
-        return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()).getPermission());
-        // return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
+//        return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()).getPermission());
+         return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
     }
 
     private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
