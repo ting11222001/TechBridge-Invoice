@@ -33,7 +33,8 @@ public class SecurityConfig {
             "/user/register/**",
             "/user/verify/code/**",
             "/user/resetpassword/**",
-            "/user/verify/password/**"
+            "/user/verify/password/**",
+            "/user/verify/account/**"
     };
     private final UserDetailsService userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
