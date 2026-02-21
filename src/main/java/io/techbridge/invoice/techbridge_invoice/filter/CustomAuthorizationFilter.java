@@ -34,7 +34,7 @@ import static java.util.Arrays.asList;
 @Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private static final String TOKEN_PREFIX = "Bearer ";
-    private static final String[] PUBLIC_ROUTES = {"/user/login", "/user/register", "/user/verify/code"};
+    private static final String[] PUBLIC_ROUTES = {"/user/login", "/user/register", "/user/verify/code", "/user/refresh/token"}; // this has to be exact
     private static final String HTTP_OPTIONS_METHOD = "OPTIONS";
     private final TokenProvider tokenProvider;
     protected static final String TOKEN_KEY = "token";

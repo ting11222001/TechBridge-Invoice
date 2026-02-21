@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,6 +46,7 @@ public class UserResource {
     private final RoleService roleService;
     private final HttpServletRequest httpServletRequest;
     private final HttpServletResponse httpServletResponse;
+    private static final String TOKEN_PREFIX = "Bearer ";
 
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
@@ -207,4 +209,44 @@ public class UserResource {
                         .statusCode(HttpStatus.OK.value())
                         .build());
     }
+
+    // START - To refresh token
+    @GetMapping("/refresh/token")
+    public ResponseEntity<HttpResponse> refreshToken(HttpServletRequest request) {
+        log.info("request HttpHeaders: {}", request.getHeader(HttpHeaders.AUTHORIZATION)); // Bearer eyJhbG...
+        if (isHeaderTokenValid(request)) {
+            String token = request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length());
+            UserDTO user = userService.getUserByEmail(tokenProvider.getSubject(token, request));
+            return ResponseEntity.ok().body(
+                    HttpResponse.builder()
+                            .timestamp(now().toString())
+                            .data(Map.of("user", user,
+                                    "access_token", tokenProvider.createAccessToken(getUserPrincipal(user)),
+                                    "refresh_token", token))
+                            .message("Token refreshed")
+                            .status(HttpStatus.OK)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } else {
+
+        return ResponseEntity.badRequest().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .reason("Refresh Token missing or invalid")
+                        .developerMessage("Refresh Token missing or invalid")
+                        .status(HttpStatus.BAD_REQUEST)
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .build());
+        }
+    }
+
+    private boolean isHeaderTokenValid(HttpServletRequest request) {
+        return request.getHeader(HttpHeaders.AUTHORIZATION) != null
+                && request.getHeader(HttpHeaders.AUTHORIZATION).startsWith(TOKEN_PREFIX)
+                && tokenProvider.isTokenValid(
+                        tokenProvider.getSubject(request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length()), request),
+                        request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length())
+                );
+    }
+
 }

@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/user/verify/code/**",
             "/user/resetpassword/**",
             "/user/verify/password/**",
-            "/user/verify/account/**"
+            "/user/verify/account/**",
+            "/user/refresh/token/**"
     };
     private final UserDetailsService userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;

@@ -81,7 +81,8 @@ public class TokenProvider {
         } catch (Exception exception) {
             throw exception;
         }
-        return token;
+//        return token;
+        return null;
     }
 
     // Convert authorities from token → GrantedAuthority
