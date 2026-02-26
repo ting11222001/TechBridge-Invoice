@@ -70,7 +70,6 @@ public class UserResource {
 
             return authentication;
         } catch (Exception exception) {
-            processError(httpServletRequest, httpServletResponse, exception);
             throw new ApiException(exception.getMessage());
         }
     }
@@ -222,7 +221,7 @@ public class UserResource {
                             .timestamp(now().toString())
                             .data(Map.of("user", user,
                                     "access_token", tokenProvider.createAccessToken(getUserPrincipal(user)),
-                                    "refresh_token", token))
+                                    "refresh_token", token)) // refresh token is used to get a new access token, so currently it would stay the same.
                             .message("Token refreshed")
                             .status(HttpStatus.OK)
                             .statusCode(HttpStatus.OK.value())
