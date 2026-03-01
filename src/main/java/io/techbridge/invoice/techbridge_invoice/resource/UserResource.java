@@ -27,7 +27,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.Map;
 
-import static io.techbridge.invoice.techbridge_invoice.utils.ExceptionUtils.processError;
+import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getAuthenticatedUser;
+import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getLoggedInUser;
 import static java.time.LocalDateTime.now;
 
 /**
@@ -51,15 +52,11 @@ public class UserResource {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
         Authentication authentication = authenticate(loginForm.getEmail(), loginForm.getPassword());
-        UserDTO user = getAuthenticatedUser(authentication);
+        UserDTO user = getLoggedInUser(authentication);
 //        System.out.println("/login authentication: " + authentication);
 //        System.out.println("/login getAuthenticatedUser() returns: " + user);
 //        System.out.println("/login getAuthenticatedUser() returns user, checking the user email: " + user.getEmail());
         return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
-    }
-
-    private UserDTO getAuthenticatedUser(Authentication authentication) {
-        return ((UserPrincipal) authentication.getPrincipal()).getUser();
     }
 
     private Authentication authenticate(String email, String password) {
@@ -104,7 +101,7 @@ public class UserResource {
 
     @GetMapping("/profile")
     public ResponseEntity<HttpResponse> profile(Authentication authentication) {
-        UserDTO user = userService.getUserByEmail(authentication.getName());
+        UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
         System.out.println(authentication);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
