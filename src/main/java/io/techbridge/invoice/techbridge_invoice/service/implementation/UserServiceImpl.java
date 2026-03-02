@@ -4,6 +4,7 @@ import io.techbridge.invoice.techbridge_invoice.domain.Role;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
 import io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper;
+import io.techbridge.invoice.techbridge_invoice.form.UpdateForm;
 import io.techbridge.invoice.techbridge_invoice.repository.RoleRepository;
 import io.techbridge.invoice.techbridge_invoice.repository.UserRepository;
 import io.techbridge.invoice.techbridge_invoice.service.UserService;
@@ -60,6 +61,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO verifyAccountKey(String key) {
         return mapToUserDTO(userRepository.verifyAccountKey(key));
+    }
+
+    @Override
+    public UserDTO updateUserDetails(UpdateForm user) {
+        return mapToUserDTO(userRepository.updateUserDetails(user));
     }
 
     private UserDTO mapToUserDTO(User user) {

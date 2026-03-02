@@ -2,6 +2,7 @@ package io.techbridge.invoice.techbridge_invoice.repository;
 
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
+import io.techbridge.invoice.techbridge_invoice.form.UpdateForm;
 
 import java.util.Collection;
 
@@ -27,4 +28,5 @@ public interface UserRepository <T extends User> {
     User verifyPasswordKey (String key);
     void renewPassword(String key, String password, String confirmPassword);
     User verifyAccountKey(String key);
+    T updateUserDetails(UpdateForm user);
 }

@@ -2,6 +2,8 @@ package io.techbridge.invoice.techbridge_invoice.service;
 
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
+import io.techbridge.invoice.techbridge_invoice.form.UpdateForm;
+import jakarta.validation.Valid;
 
 /**
  * @author Li-Ting Liao
@@ -17,4 +19,5 @@ public interface UserService {
     UserDTO verifyPasswordKey(String key);
     void renewPassword(String key, String password, String confirmPassword);
     UserDTO verifyAccountKey(String key);
+    UserDTO updateUserDetails(@Valid UpdateForm user);
 }

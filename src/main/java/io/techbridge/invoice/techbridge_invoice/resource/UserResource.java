@@ -7,6 +7,7 @@ import io.techbridge.invoice.techbridge_invoice.dto.UserDTO;
 import io.techbridge.invoice.techbridge_invoice.dtoMapper.UserDTOMapper;
 import io.techbridge.invoice.techbridge_invoice.exception.ApiException;
 import io.techbridge.invoice.techbridge_invoice.form.LoginForm;
+import io.techbridge.invoice.techbridge_invoice.form.UpdateForm;
 import io.techbridge.invoice.techbridge_invoice.provider.TokenProvider;
 import io.techbridge.invoice.techbridge_invoice.service.RoleService;
 import io.techbridge.invoice.techbridge_invoice.service.UserService;
@@ -108,6 +109,20 @@ public class UserResource {
                         .timestamp(now().toString())
                         .data(Map.of("user", user))
                         .message("Profile Retrieved")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<HttpResponse> updateUser(@RequestBody @Valid UpdateForm user) {
+        UserDTO updatedUser = userService.updateUserDetails(user);
+//        System.out.println(authentication);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timestamp(now().toString())
+                        .data(Map.of("user", user))
+                        .message("User updated")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
                         .build());
