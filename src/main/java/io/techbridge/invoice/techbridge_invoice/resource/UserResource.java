@@ -227,7 +227,7 @@ public class UserResource {
         log.info("request HttpHeaders: {}", request.getHeader(HttpHeaders.AUTHORIZATION)); // Bearer eyJhbG...
         if (isHeaderTokenValid(request)) {
             String token = request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length());
-            UserDTO user = userService.getUserByEmail(tokenProvider.getSubject(token, request));
+            UserDTO user = userService.getUserById(tokenProvider.getSubject(token, request));
             return ResponseEntity.ok().body(
                     HttpResponse.builder()
                             .timestamp(now().toString())
