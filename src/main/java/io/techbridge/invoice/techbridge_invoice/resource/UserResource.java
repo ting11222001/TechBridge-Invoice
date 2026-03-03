@@ -27,6 +27,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getAuthenticatedUser;
 import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getLoggedInUser;
@@ -116,12 +117,12 @@ public class UserResource {
 
     @PatchMapping("/update")
     public ResponseEntity<HttpResponse> updateUser(@RequestBody @Valid UpdateForm user) {
+        // TimeUnit.SECONDS.sleep(3);  // test loading on the frontend's user profile page
         UserDTO updatedUser = userService.updateUserDetails(user);
-//        System.out.println(authentication);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timestamp(now().toString())
-                        .data(Map.of("user", user))
+                        .data(Map.of("user", updatedUser))
                         .message("User updated")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
