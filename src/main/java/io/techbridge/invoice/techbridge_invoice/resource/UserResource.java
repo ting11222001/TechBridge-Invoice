@@ -1,5 +1,6 @@
 package io.techbridge.invoice.techbridge_invoice.resource;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.techbridge.invoice.techbridge_invoice.domain.HttpResponse;
 import io.techbridge.invoice.techbridge_invoice.domain.User;
 import io.techbridge.invoice.techbridge_invoice.domain.UserPrincipal;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getAuthenticatedUser;
 import static io.techbridge.invoice.techbridge_invoice.utils.UserUtils.getLoggedInUser;
@@ -151,7 +153,7 @@ public class UserResource {
 
     private UserPrincipal getUserPrincipal(UserDTO user) {
 //        return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()).getPermission());
-         return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
+        return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
     }
 
     private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
@@ -196,8 +198,8 @@ public class UserResource {
 
     @PostMapping("/resetpassword/{key}/{password}/{confirmPassword}")
     public ResponseEntity<HttpResponse> resetPasswordWithKey(@PathVariable("key") String key,
-                                                          @PathVariable("password") String password,
-                                                          @PathVariable("confirmPassword") String confirmPassword) {
+                                                             @PathVariable("password") String password,
+                                                             @PathVariable("confirmPassword") String confirmPassword) {
         userService.renewPassword(key, password, confirmPassword);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
@@ -225,10 +227,23 @@ public class UserResource {
     // START - To refresh token
     @GetMapping("/refresh/token")
     public ResponseEntity<HttpResponse> refreshToken(HttpServletRequest request) {
-        log.info("request HttpHeaders: {}", request.getHeader(HttpHeaders.AUTHORIZATION)); // Bearer eyJhbG...
-        if (isHeaderTokenValid(request)) {
+        // log.info("request HttpHeaders: {}", request.getHeader(HttpHeaders.AUTHORIZATION)); // Bearer eyJhbG...
+
+        if (!hasAuthorizationHeader(request)) {
+            return ResponseEntity.badRequest().body(
+                    HttpResponse.builder()
+                            .timestamp(now().toString())
+                            .developerMessage("Refresh Token has missing authorization header")
+                            .message("Your access session is expired. Please log in again")
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build());
+        }
+
+        try {
             String token = request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length());
-            UserDTO user = userService.getUserById(tokenProvider.getSubject(token, request));
+            UserDTO user = userService.getUserById(tokenProvider.getSubject(token));
+
             return ResponseEntity.ok().body(
                     HttpResponse.builder()
                             .timestamp(now().toString())
@@ -238,27 +253,47 @@ public class UserResource {
                             .message("Token refreshed")
                             .status(HttpStatus.OK)
                             .statusCode(HttpStatus.OK.value())
-                            .build());
-        } else {
+                            .build()
+                    );
 
-        return ResponseEntity.badRequest().body(
-                HttpResponse.builder()
-                        .timestamp(now().toString())
-                        .reason("Refresh Token missing or invalid")
-                        .developerMessage("Refresh Token missing or invalid")
-                        .status(HttpStatus.BAD_REQUEST)
-                        .statusCode(HttpStatus.BAD_REQUEST.value())
-                        .build());
+        } catch (TokenExpiredException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    HttpResponse.builder()
+                            .timestamp(now().toString())
+                            .developerMessage("Refresh token expired")
+                            .message("Your access session is expired. Please log in again")
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .statusCode(HttpStatus.UNAUTHORIZED.value())
+                            .build()
+            );
+
+        } catch (Exception exception) {
+            log.info(exception.getMessage());
+            return ResponseEntity.badRequest().body(
+                    HttpResponse.builder()
+                            .timestamp(now().toString())
+                            .message("Please try to log in again")
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
         }
     }
 
-    private boolean isHeaderTokenValid(HttpServletRequest request) {
+
+    private String getToken(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
+                .filter(header -> header.startsWith(TOKEN_PREFIX))
+                .map(token -> token.replace(TOKEN_PREFIX, StringUtils.EMPTY))
+                .orElse("");
+    }
+
+    private boolean hasAuthorizationHeader(HttpServletRequest request) {
         return request.getHeader(HttpHeaders.AUTHORIZATION) != null
-                && request.getHeader(HttpHeaders.AUTHORIZATION).startsWith(TOKEN_PREFIX)
-                && tokenProvider.isTokenValid(
-                        tokenProvider.getSubject(request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length()), request),
-                        request.getHeader(HttpHeaders.AUTHORIZATION).substring(TOKEN_PREFIX.length())
-                );
+                && request.getHeader(HttpHeaders.AUTHORIZATION).startsWith(TOKEN_PREFIX);
+    }
+
+    private boolean isHeaderTokenValid(HttpServletRequest request) {
+        return tokenProvider.isTokenValid(getToken(request));
     }
 
 }

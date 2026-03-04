@@ -17,10 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static io.techbridge.invoice.techbridge_invoice.utils.ExceptionUtils.processError;
 import static java.util.Arrays.asList;
 
 /**
@@ -40,35 +38,41 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     protected static final String TOKEN_KEY = "token";
     protected static final String EMAIL_KEY = "email";
 
+    /**
+     * ✔ Try to authenticate with access token
+     * ✔ If successful → set SecurityContext
+     * ✔ If not → do nothing
+     * **/
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filter) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getToken(request);
-            Long userId = getUserId(request);
-            if (tokenProvider.isTokenValid(userId, token)) {
+            if (token.isEmpty()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            Long userId = tokenProvider.getSubject(token); // here will throw exception when token is expired
+            if (userId != null) {
                 List<GrantedAuthority> authorities = tokenProvider.getAuthorities(token);
                 Authentication authentication = tokenProvider.getAuthentication(userId, authorities, request);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                SecurityContextHolder.clearContext();
             }
-            System.out.println(SecurityContextHolder.getContext().getAuthentication());
-            filter.doFilter(request, response);
+
         } catch (Exception exception) {
+            SecurityContextHolder.clearContext();
             log.error(exception.getMessage());
-            processError(request, response, exception);
         }
+
+        // System.out.println("CustomAuthorizationFilter doFilterInternal: " + SecurityContextHolder.getContext().getAuthentication());
+        filterChain.doFilter(request, response);
     }
 
     private String getToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
                 .filter(header -> header.startsWith(TOKEN_PREFIX))
                 .map(token -> token.replace(TOKEN_PREFIX, StringUtils.EMPTY))
-                .orElse(null);
-    }
-
-    private Long getUserId(HttpServletRequest request) {
-        return tokenProvider.getSubject(getToken(request), request);
+                .orElse("");
     }
 
     @Override

@@ -42,8 +42,8 @@ public class TokenProvider {
     public static final String AUTHORITIES = "authorities";
     private static final String TECHBRIDGE_INVOICE_LLC = "TECHBRIDGE_INVOICE_LLC";
     private static final String CUSTOMER_MANAGEMENT_SERVICE = "CUSTOMER_MANAGEMENT_SERVICE";
-    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1_800_000;  // this is in ms = 30 min
-    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000; // 5 days
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1_800_000;  // normally set this to 1_800_000 ms, i.e. 30 min. Set it to 30_000 ms i.e. 30 sec when testing the interceptor in the frontend
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000; // normally set this to 432_000_000 ms, i.e. 5 days. Set it to 30_000 ms i.e. 30 sec for testing.
     private static final String TOKEN_CANNOT_BE_VERIFIED = "";
     private final UserService userService;
 
@@ -73,19 +73,9 @@ public class TokenProvider {
                 .sign(HMAC512(secret.getBytes()));
     }
 
-    public Long getSubject(String token, HttpServletRequest request) {
+    public Long getSubject(String token) {
         JWTVerifier verifier = getJWTVerifier();
-        try {
-            return Long.valueOf(verifier.verify(token).getSubject());
-        } catch (TokenExpiredException exception) {
-            request.setAttribute("expiredMessage", exception.getMessage());
-        } catch (InvalidClaimException exception) {
-            request.setAttribute("invalidClaim", exception.getMessage());
-        } catch (Exception exception) {
-            throw exception;
-        }
-        // return token;
-        return null;
+        return Long.valueOf(verifier.verify(token).getSubject());
     }
 
     // Convert authorities from token → GrantedAuthority
@@ -100,14 +90,10 @@ public class TokenProvider {
         return userPasswordAuthToken;
     }
 
-    public boolean isTokenValid(Long userId, String token) {
+    public boolean isTokenValid(String token) {
         JWTVerifier verifier = getJWTVerifier();
-        return !Objects.isNull(userId) && !isTokenExpired(verifier, token);
-    }
-
-    private boolean isTokenExpired(JWTVerifier verifier, String token) {
-        Date expiration = verifier.verify(token).getExpiresAt();
-        return expiration.before(new Date());
+        verifier.verify(token); // will throw exceptions if the token has expired, etc.
+        return true;
     }
 
     // Put permissions into token
