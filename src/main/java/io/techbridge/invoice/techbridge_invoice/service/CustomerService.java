@@ -21,5 +21,6 @@ public interface CustomerService {
     // Invoice functions
     Invoice createInvoice(Invoice invoice);
     Page<Invoice> getInvoices(int page, int size);
-    void addInvoiceToCustomer(Long customerId, Long invoiceId);
+    Invoice getInvoice(Long id);
+    void addInvoiceToCustomer(Long customerId, Invoice invoice);
 }

@@ -73,9 +73,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void addInvoiceToCustomer(Long customerId, Long invoiceId) {
+    public Invoice getInvoice(Long id) {
+        return invoiceRepository.findById(id).orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+    }
+
+    @Override
+    public void addInvoiceToCustomer(Long customerId, Invoice invoice) {
+        invoice.setInvoiceNumber("INV-" + RandomStringUtils.secure().nextAlphanumeric(8).toUpperCase());
         Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found with customer id: " + customerId));
-        Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice not found with invoice id: " + invoiceId));
         invoice.setCustomer(customer);
         invoiceRepository.save(invoice);
     }
