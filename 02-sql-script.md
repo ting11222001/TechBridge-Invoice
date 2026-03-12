@@ -64,3 +64,62 @@ VALUES
 ('91 Salisbury Hwy, Adelaide','2026-03-11 10:48:00','dylan@gmail.com','https://cdn-icons-png.flaticon.com/512/2922/2922683.png','Dylan Morgan','0400000049','ACTIVE','BUSINESS'),
 ('23 Grand Junction Rd, Adelaide','2026-03-11 10:49:00','layla@gmail.com','https://cdn-icons-png.flaticon.com/512/2922/2922524.png','Layla Bell','0400000050','ACTIVE','PRIVATE');
 ```
+
+# Populate the Invoice table
+```
+INSERT INTO dev_db_techbridge_invoice.invoice
+(date, invoice_number, services, status, total, customer_id)
+VALUES
+('2026-03-12 10:15:23.000000','INV-A7F3K9Q2','Website development','PAID',1250.00,1),
+('2026-03-12 11:02:10.000000','INV-X4M8ZP1L','Mobile app UI design','PENDING',780.50,1),
+('2026-03-12 11:45:33.000000','INV-Q9T2B6H8','Database optimisation','PAID',420.75,2),
+('2026-03-12 12:10:05.000000','INV-L5K3D8W1','API integration service','PENDING',960.00,2),
+('2026-03-12 13:22:44.000000','INV-Z8R4M2N6','Cloud deployment setup','PAID',650.00,54),
+('2026-03-12 14:01:12.000000','INV-J7V9C1T4','Security audit','PENDING',890.30,54),
+('2026-03-12 14:33:21.000000','INV-P2W6F8Y3','Backend feature development','PAID',1340.00,55),
+('2026-03-12 15:05:56.000000','INV-S4X9D2Q7','System maintenance','PAID',300.00,55),
+('2026-03-12 15:40:18.000000','INV-U8K3E5L9','DevOps pipeline setup','PENDING',720.45,56),
+('2026-03-12 16:12:39.000000','INV-H6N1R4Z8','Performance monitoring tools','PAID',510.00,55);
+```
+
+# Derived tables
+
+Tried this which is called a derived table - a temporary table created from a subquery:
+```
+SELECT COUNT(*) total_customers FROM customer;
+```
+
+And each of these produce a single-row table:
+```
+(SELECT COUNT(*) total_customers FROM customer) c
+(SELECT COUNT(*) total_invoices FROM invoice) i
+(SELECT ROUND(SUM(total)) total_billed FROM invoice) inv
+```
+
+Then I can cross join them in the `FROM` clause like this:
+```
+FROM
+(subquery) c,
+(subquery) i,
+(subquery) inv
+```
+
+So I can write this:
+```
+SELECT 
+    c.total_customers, 
+    i.total_invoices, 
+    inv.total_billed
+FROM
+    (SELECT COUNT(*) total_customers FROM customer) c, 
+    (SELECT COUNT(*) total_invoices FROM invoice) i, 
+    (SELECT ROUND(SUM(total)) total_billed FROM invoice) inv;
+```
+
+or cleaner like this:
+```
+SELECT 
+	(SELECT COUNT(*) FROM customer) AS total_customers,
+	(SELECT COUNT(*) FROM invoice) AS total_invoices,
+	(SELECT ROUND(SUM(total)) FROM invoice) AS total_billed;
+```

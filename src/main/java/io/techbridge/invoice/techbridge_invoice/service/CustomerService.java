@@ -23,4 +23,6 @@ public interface CustomerService {
     Page<Invoice> getInvoices(int page, int size);
     Invoice getInvoice(Long id);
     void addInvoiceToCustomer(Long customerId, Invoice invoice);
+
+    Object getStats();
 }

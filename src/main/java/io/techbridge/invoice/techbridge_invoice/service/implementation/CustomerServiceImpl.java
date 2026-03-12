@@ -4,6 +4,7 @@ import io.techbridge.invoice.techbridge_invoice.domain.Customer;
 import io.techbridge.invoice.techbridge_invoice.domain.Invoice;
 import io.techbridge.invoice.techbridge_invoice.repository.CustomerRepository;
 import io.techbridge.invoice.techbridge_invoice.repository.InvoiceRepository;
+import io.techbridge.invoice.techbridge_invoice.rowMapper.StatsRowMapper;
 import io.techbridge.invoice.techbridge_invoice.service.CustomerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
+
+import static io.techbridge.invoice.techbridge_invoice.query.CustomerQuery.STATS_QUERY;
 
 /**
  * @author Li-Ting Liao
@@ -27,6 +32,7 @@ import java.util.Date;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final InvoiceRepository invoiceRepository;
+    private final NamedParameterJdbcTemplate jdbc;
 
     // Customer functions
     @Override
@@ -83,5 +89,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found with customer id: " + customerId));
         invoice.setCustomer(customer);
         invoiceRepository.save(invoice);
+    }
+
+    @Override
+    public Object getStats() {
+        return jdbc.queryForObject(STATS_QUERY, Map.of(), new StatsRowMapper());
     }
 }
