@@ -20,6 +20,9 @@ twilio:
 
 jwt:
   secret: ${MY_JWT_SECRET}  → add this in the intellij > Edit Configurations > Environment Variables (MY_JWT_SECRET=xxx)
+
+allowed:
+  origins: ${ALLOWED_ORIGINS:http://localhost:4200} → ALLOWED_ORIGINS will include the vercel frontend domain, e.g. https://tech-bridge-invoice-app.vercel.app
 ```
 
 # How Spring decides which YAML to use
