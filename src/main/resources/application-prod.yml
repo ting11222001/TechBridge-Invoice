@@ -11,5 +11,5 @@ spring:
 
   sql:
     init:
-      mode: never
+      mode: ${SQL_INITIALISE_MODE}
       continue-on-error: false

@@ -8,3 +8,11 @@ server:
 application:
   title: TechBridge-Invoices
   version: 1.0
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  auth-token: ${TWILIO_AUTH_TOKEN}
+  from-number: ${TWILIO_FROM_NUMBER}
+
+jwt:
+  secret: ${MY_JWT_SECRET}
