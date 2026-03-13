@@ -2,6 +2,9 @@ spring:
   profiles:
     active: @spring.profiles.active@
 
+server:
+  port: ${PORT:8080}
+
 application:
   title: TechBridge-Invoices
   version: 1.0
