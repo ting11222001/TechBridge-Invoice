@@ -80,7 +80,7 @@ public class CustomerResource {
                 HttpResponse.builder()
                         .timestamp(now().toString())
                         .data(Map.of("user", userService.getUserByEmail(user.getEmail()),
-                                "customers", customerService.searchCustomers(name, page, size)))
+                                "page", customerService.searchCustomers(name, page, size)))
                         .message("Customers Found")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
@@ -118,7 +118,7 @@ public class CustomerResource {
                 );
     }
 
-    @PostMapping("/invoice/new")
+    @GetMapping("/invoice/new")
     public ResponseEntity<HttpResponse> newInvoice(@AuthenticationPrincipal UserDTO user) {
         return ResponseEntity.ok()
                 .body(
@@ -140,7 +140,7 @@ public class CustomerResource {
                 HttpResponse.builder()
                         .timestamp(now().toString())
                         .data(Map.of("user", userService.getUserByEmail(user.getEmail()),
-                                "invoices", customerService.getInvoices(page, size)))
+                                "page", customerService.getInvoices(page, size)))
                         .message("Invoices Retrieved")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
@@ -171,8 +171,8 @@ public class CustomerResource {
                         HttpResponse.builder()
                                 .timestamp(now().toString())
                                 .data(Map.of("user", userService.getUserByEmail(user.getEmail()),
-                                        "customer", customerService.getCustomers()))
-                                .message("Customers Retrieved")
+                                        "customers", customerService.getCustomers()))
+                                .message(String.format("Invoice added to customer with Id: %s", customerId))
                                 .status(HttpStatus.OK)
                                 .statusCode(HttpStatus.OK.value())
                                 .build()
