@@ -154,7 +154,8 @@ public class CustomerResource {
                 HttpResponse.builder()
                         .timestamp(now().toString())
                         .data(Map.of("user", userService.getUserByEmail(user.getEmail()),
-                                "invoice", customerService.getInvoice(invoiceId)))
+                                "invoice", customerService.getInvoice(invoiceId),
+                                "customer", customerService.getInvoice(invoiceId).getCustomer()))
                         .message("Invoice Retrieved")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
