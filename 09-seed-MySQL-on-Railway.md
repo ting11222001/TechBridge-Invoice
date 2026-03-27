@@ -22,26 +22,13 @@ Password: click "show" on Railway to reveal it
 Then, click `Test Connection`. Once successful, click `OK`.
 
 
-# Queries
+# Queries to seed the database for Roles, Users, Customer, Invoice tables
 
-Follow the `02-sql-script.md`.
+Follow the `data.sql`.
 
-Replace `dev_db_techbridge_invoice` with `railway` this database name in DBeaver.
+Drop the `dev_db_techbridge_invoice` or `railway` prefix in `data.sql`.
 
-E.g. 
-```
-INSERT INTO railway.Roles (name, permission)
-VALUES ('ROLE_USER', 'READ:USER,READ:CUSTOMER'),
-('ROLE_MANAGER', 'READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
-('ROLE_ADMIN', 'READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
-('ROLE_SYSADMIN', 'READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER');
-```
-
-Seed with these queries in the `02-sql-script.md`:
-- Populate the Roles table
-- Populate the Customers table
-- Populate the Invoice table
-
+Spring Boot runs it against whichever database is configured in application.properties, so hardcoding the schema name can cause errors in other environments.
 
 # Postman
 
