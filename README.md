@@ -4,7 +4,7 @@ TechBridge is a device donation platform connecting businesses, refurbishers, an
 
 ![Backend CI](https://github.com/ting11222001/TechBridge-Invoice/actions/workflows/backend-ci.yml/badge.svg)
 
-[About the TechBridge project](https://your-landing-page-url) · [Invoice Module Live Demo](https://tech-bridge-invoice-app.vercel.app/) · [Invoice Module (Frontend repo)](https://github.com/ting11222001/TechBridge-Invoice-app) · Donation Module (coming soon)
+[About the TechBridge project](https://tech-bridge-landing-page.vercel.app/) · [Invoice Module Live Demo](https://tech-bridge-invoice-app.vercel.app/) · [Invoice Module (Frontend repo)](https://github.com/ting11222001/TechBridge-Invoice-app) · Donation Module (coming soon)
 
 > Full project docs (architecture, deployment, role/permission reference) are in the [frontend repo](https://github.com/ting11222001/TechBridge-Invoice-app).
 
