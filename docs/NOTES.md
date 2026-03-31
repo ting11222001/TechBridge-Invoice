@@ -306,12 +306,3 @@ Register a user against the prod API:
 POST https://techbridge-invoice-production.up.railway.app/user/register
 ```
 A new entry should appear in the `Users` table on Railway.
-
----
-
-## Fix: tell Railway to ignore the Dockerfile
-Create a file called `.railwayignore` in the backend repo root:
-```
-Dockerfile
-```
-This tells Railway to skip the Dockerfile and use its own build process like before.
