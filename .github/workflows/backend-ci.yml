@@ -18,4 +18,5 @@ jobs:
           cache: 'maven'
       - name: Make mvnw executable
         run: chmod +x ./mvnw
-      - run: ./mvnw package -DskipTests
+      - name: Build
+        run: ./mvnw package -DskipTests
